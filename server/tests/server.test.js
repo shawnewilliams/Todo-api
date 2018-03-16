@@ -32,13 +32,12 @@ describe('POST /todos', () => {
     });
 
     it('should not create todo with invalid body data', (done) => {
-
         request(app)
             .post('/todos')
             .send({})
             .expect(400)
             .end((err, res) => {
-                if(err) {
+                if (err) {
                     return(done(err));
                 }
                 Todo.find().then((todos) => {
