@@ -43,7 +43,7 @@ if(!ObjectID.isValid(id)) {
 
 User.findById(id).then((user) => {
     if(!user) {
-        return console.log('ID not valid');
+        return console.log('Unable to find user');
     }
     console.log('User', user);
 }).catch((e) => console.log(e));
