@@ -10,8 +10,9 @@ const todos = [{
     text: 'First test todo'
 },{ 
     _id: new ObjectID(),
-    text: 'Second test todo'
-
+    text: 'Second test todo',
+    completed: true,
+    completedAt: 333,
 }];
 
 beforeEach((done) => {
@@ -132,6 +133,55 @@ describe('DELETE /todos/id', () => {
             .delete('/todos/123')
             .expect(404)
             .end(done);
+    });
+});
+
+describe('PATCH /todos/:id', () => {
+    it('should update the todo', (done) => {
+        var updated = {text: "Updated todo", completed: true}
+        request(app)
+            .patch(`/todos/${todos[0]._id.toHexString()}`)
+            .send({text: updated.text, completed: updated.completed})
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(updated.text);
+                expect(res.body.todo.completed).toBe(true);
+                expect(res.body.todo.completedAt).toBeA('number');
+            })
+            .end(done);
+            // .end((err, res) => {
+            //     if (err) {
+            //         return done(err);
+            //     }
+            //     Todo.findById(todos[0]._id.toHexString()).then((todo) => {
+            //         expect(todo).toInclude(updated);
+            //         done();
+            //     }).catch((e) => res.done(e));
+            // });
+    });
+
+    it('should clear completedAt when todo is not completed', (done) => {
+        request(app)
+            .patch(`/todos/${todos[1]._id.toHexString()}`)
+            .send({text: "Second updated todo", completed: false})
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe("Second updated todo");
+                expect(res.body.todo.completed).toBe(false);
+                expect(res.body.todo.completedAt).toNotExist();
+            })
+            .end(done);
+            // .end((err, res) => {
+            //     if (err) {
+            //         return done(err)
+            //     }
+            //     Todo.findById(todos[1]._id.toHexString()).then((todo) => {
+            //         expect(todo.completedAt).toNotExist();
+            //         expect(todo.text).toBe("Second updated todo")
+            //         done();
+            //     }).catch((e) => res.done(e)); 
+            // });
+
     });
 });
 
