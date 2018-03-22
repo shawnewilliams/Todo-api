@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 var UserSchema = new mongoose.Schema({
         email: {
@@ -41,6 +42,7 @@ UserSchema.methods.toJSON = function() {
     return _.pick(userObject,['email', '_id']);
 };
 
+// methods creates instance method
 UserSchema.methods.generateAuthToken = function() {
     var user = this;
     var access = 'auth';
@@ -78,6 +80,28 @@ UserSchema.statics.findByToken = function(token) {
         'tokens.access': 'auth'
     })
 };
+
+UserSchema.pre('save', function(next) {
+    var user = this;
+
+    if (user.isModified('password')) {
+        bcrypt.genSalt(10, (err, salt) => {
+            if (err) {
+                return next(err);
+            };
+            bcrypt.hash(user.password, salt, (err, hash) => {
+                if (err) {
+                    return next(err);
+                };
+                user.password = hash;
+                next();
+            });
+        });
+        
+    } else {
+        next();
+    }
+});
 
 var User = mongoose.model('User', UserSchema);
 
